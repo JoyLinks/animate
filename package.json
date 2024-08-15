@@ -1,0 +1,31 @@
+{
+	"name": "@joyzl/animate",
+	"version": "1.0.0",
+	"description": "JavaScript Animation",
+	"main": "index.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"help": "webpack serve --open"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/JoyLinks/animate.git"
+	},
+	"keywords": [
+		"animate",
+		"webpack",
+		"html",
+		"json"
+	],
+	"author": "ZhangXi",
+	"license": "Apache-2.0",
+	"bugs": {
+		"url": "https://github.com/JoyLinks/animate/issues"
+	},
+	"homepage": "https://github.com/JoyLinks/animate#readme",
+	"devDependencies": {
+		"webpack": "^5.91.0",
+		"webpack-cli": "^5.1.4",
+		"webpack-dev-server": "^5.0.4"
+	}
+}
