@@ -16,6 +16,26 @@
 				文本切换
 				<span id="texts"></span>
 			</p>
+			<p>
+				样式类切换
+				<span id="stycs">文本</span>
+				<style>
+					.red {
+						color: red;
+						background-color: black;
+					}
+
+					.green {
+						color: green;
+						background-color: black;
+					}
+
+					.blue {
+						color: blue;
+						background-color: black;
+					}
+				</style>
+			</p>
 		</article>
 		<article title="visible">
 			<p>
@@ -95,6 +115,7 @@
 
 		// texts
 		animate.texts("texts", ["J", "O", "Y", "Z", "L"]);
+		animate.classes("stycs", ["red", "green", "blue"]);
 
 		// visible
 		let visible = true;

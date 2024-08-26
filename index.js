@@ -2,6 +2,7 @@
 
 export default {
 	visible,
+	classes,
 	toggle,
 	scroll,
 	texts,
@@ -88,17 +89,27 @@ function scroll(container, speed = 20, delay = 100) {
 	if (container) {
 		let animate = container.__A_SCROLL;
 		if (animate) {
-			// 已绑定动画，如果多次绑定会创建多个定时器导致画面跳动
-			if (speed <= 0) {
+			// 已绑定动画
+			// 如果多次绑定会创建多个定时器导致画面跳动
+			if (speed && delay) {
+				animate.speed = speed;
+				animate.delay = delay;
+			} else {
 				container.__A_SCROLL = null;
 				container.style.scrollbarWidth = null;
 				animate.eventController.abort();
+				animate.state = false;
+				animate.speed = 0;
+				animate.delay = 0;
 			}
-		} else {
+		} else
+		if (speed && delay) {
 			// 隐藏滚动条但可以滚动
 			container.style.scrollbarWidth = "none";
 			container.__A_SCROLL = animate = {
 				eventController: new AbortController(),
+				speed: speed,
+				delay: delay,
 				state: true
 			};
 			// 鼠标移入暂停滚动
@@ -119,19 +130,21 @@ function scroll(container, speed = 20, delay = 100) {
 				direction = 1;
 			let top = container.scrollTop;
 			const frame = function(timestamp) {
-				if (time == 0 || timestamp - time >= speed) {
+				if (time == 0 || timestamp - time >= animate.speed) {
 					time = timestamp;
 
 					if (animate.state) {
 						top += direction;
 						container.scrollTop = top;
 						// delay 用于切换延迟
-						if (top + delay < 0 || top - delay >= container.scrollHeight - container.clientHeight) {
+						if (top + animate.delay < 0 || top - animate.delay >= container.scrollHeight - container.clientHeight) {
 							direction = direction * -1;
 						}
 					}
 				}
-				window.requestAnimationFrame(frame);
+				if (animate.speed && animate.delay) {
+					window.requestAnimationFrame(frame);
+				}
 			}
 			frame(0);
 		}
@@ -151,26 +164,90 @@ function texts(element, texts, delay = 300) {
 	if (element) {
 		let animate = element.__A_TEXTS;
 		if (animate) {
-			// 已绑定动画，如果多次绑定会创建多个定时器导致画面跳动
-			if (!texts || delay <= 0) {
+			// 已绑定动画
+			// 如果多次绑定会创建多个定时器导致画面跳动
+			if (texts && delay) {
+				animate.delay = delay;
+				animate.texts = texts;
+			} else {
 				element.__A_TEXTS = null;
+				animate.delay = 0;
 			}
-		} else {
-			element.__A_TEXTS = true;
+		} else
+		if (texts && delay) {
+			element.__A_TEXTS = animate = {
+				delay: delay,
+				texts: texts
+			};
 			// 动画函数
 			let time = 0,
 				index = 0;
 			const frame = function(timestamp) {
-				if (time == 0 || timestamp - time >= delay) {
+				if (time == 0 || timestamp - time >= animate.delay) {
 					time = timestamp;
-					if (index < texts.length) {
-						element.innerText = texts[index++];
+
+					if (index < animate.texts.length) {
+						element.innerText = animate.texts[index++];
 					} else {
 						index = 1;
-						element.innerText = texts[0];
+						element.innerText = animate.texts[0];
 					}
 				}
-				window.requestAnimationFrame(frame);
+				if (animate.texts && animate.delay) {
+					window.requestAnimationFrame(frame);
+				}
+			}
+			frame(0);
+		}
+	}
+}
+
+/**
+ * 样式切换，可用于字体图标切换实现动画
+ * @param {Element} element 应用样式的标签
+ * @param {String[]} classes 样式数组,空对象将取消动画
+ * @param {Number} delay 切换延迟,0将取消动画
+ */
+function classes(element, classes, delay = 300) {
+	if (element && element.trim) {
+		element = document.getElementById(element);
+	}
+	if (element) {
+		let animate = element.__A_CLASSES;
+		if (animate) {
+			// 已绑定动画
+			// 如果多次绑定会创建多个定时器导致画面跳动
+			if (classes && delay) {
+				animate.classes = classes;
+				animate.delay = delay;
+			} else {
+				element.__A_CLASSES = null;
+				animate.delay = 0;
+			}
+		} else
+		if (classes && delay) {
+			element.__A_CLASSES = animate = {
+				classes: classes,
+				delay: delay
+			};
+			// 动画函数
+			let time = 0,
+				index = 0;
+			const frame = function(timestamp) {
+				if (time == 0 || timestamp - time >= animate.delay) {
+					time = timestamp;
+
+					element.classList.remove(...animate.classes);
+					if (index < animate.classes.length) {
+						element.classList.add(animate.classes[index++]);
+					} else {
+						element.classList.add(animate.classes[0]);
+						index = 1;
+					}
+				}
+				if (animate.classes && animate.delay) {
+					window.requestAnimationFrame(frame);
+				}
 			}
 			frame(0);
 		}
@@ -180,7 +257,7 @@ function texts(element, texts, delay = 300) {
 /**
  * 切换显示，切换显示容器内的子元素，将根据容器高度自动适配可视元素
  * @param {Element} container 容器标签,其下得子元素将切换
- * @param {Number} units 每次切换子元素数量,0将取消动画,负值将整页切换
+ * @param {Number} units 每次切换子元素数量,0将取消动画
  * @param {Number} delay 切换延迟,0将取消动画
  */
 function toggle(container, units = 1, delay = 3000) {
@@ -191,19 +268,26 @@ function toggle(container, units = 1, delay = 3000) {
 		let animate = container.__A_TOGGLE;
 		if (animate) {
 			// 已绑定动画，如果多次绑定会创建多个定时器导致画面跳动
-			if (units == 0 || delay == 0) {
+			if (units && delay) {
+				animate.units = units;
+				animate.delay = delay;
+			} else {
 				container.__A_TOGGLE = null;
 				container.style.scrollbarWidth = null;
 				animate.eventController.abort();
+				// 将已隐藏的项目全部显示
 				for (let index = 0; index < container.children.length; index++) {
 					show(container.children.item(index));
 				}
 			}
-		} else {
+		} else
+		if (units && delay) {
 			// 隐藏滚动条但可以滚动
 			container.style.scrollbarWidth = "none";
 			container.__A_TOGGLE = animate = {
 				eventController: new AbortController(),
+				units: units,
+				delay: delay,
 				shows: [],
 				state: true
 			};
@@ -219,6 +303,7 @@ function toggle(container, units = 1, delay = 3000) {
 			}, {
 				signal: animate.eventController.signal
 			});
+
 			// 初始显示
 			let size = 0;
 			let height = 0;
@@ -238,18 +323,16 @@ function toggle(container, units = 1, delay = 3000) {
 				// 已经容纳全部项目，无须滚动
 				return;
 			}
-			if (units < 0) {
-				units = size;
-			}
+
 			// 动画函数
 			let time = 0;
 			const frame = function(timestamp) {
-				if (timestamp > 0 && timestamp - time >= delay) {
+				if (timestamp > 0 && timestamp - time >= animate.delay) {
 					time = timestamp;
 					if (animate.state) {
 						size = 0;
 						// 隐藏队列头部的部分标签
-						for (index = 0; index < units && index < elements.length; index++) {
+						for (index = 0; index < animate.units && index < elements.length; index++) {
 							element = elements.shift();
 							elements.push(element);
 							hide(element, true);
@@ -269,7 +352,9 @@ function toggle(container, units = 1, delay = 3000) {
 						}
 					}
 				}
-				window.requestAnimationFrame(frame);
+				if (animate.units && animate.delay) {
+					window.requestAnimationFrame(frame);
+				}
 			}
 			frame(0);
 		}
